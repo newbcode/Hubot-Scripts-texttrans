@@ -13,13 +13,17 @@ sub load {
     my %text;
     my $user_name;
     my $user_msg;
+    my @msgs;
     
+
     $robot->catchAll(
         sub {
             my $msg = shift;
 
             $user_name = $msg->message->user->{name};
             $user_msg = $msg->message->text;
+
+            push @msgs, $user_name, $user_msg;
 
             %text = (
                 $user_name => $user_msg,
@@ -32,11 +36,12 @@ sub load {
 
         sub {
             my $msg = shift;
-            $msg->send($text{$user_name});
-            p %text;
+#$msg->send($text{$user_name});
+            $msg->send(@msgs);
+#p %text;
+            p @msgs;
         }
     );
-
 }
 
 1;
