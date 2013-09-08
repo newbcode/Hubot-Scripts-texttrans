@@ -10,17 +10,33 @@ use DateTime;
 
 sub load {
     my ( $class, $robot ) = @_;
+    my %text;
+    my $user_name;
+    my $user_msg;
     
     $robot->catchAll(
         sub {
             my $msg = shift;
 
-            my $user_name = $msg->message->user->{name};
-            my $text = $msg->message;
-            $msg->send($user_name);
-            $msg->send($text);
+            $user_name = $msg->message->user->{name};
+            $user_msg = $msg->message->text;
+
+            %text = (
+                $user_name => $user_msg,
+            );
         }
     );
+
+    $robot->hear (
+        qr/start/i,
+
+        sub {
+            my $msg = shift;
+            $msg->send($text{$user_name});
+            p %text;
+        }
+    );
+
 }
 
 1;
