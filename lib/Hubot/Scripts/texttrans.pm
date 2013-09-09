@@ -3,34 +3,28 @@ package Hubot::Scripts::texttrans;
 use utf8;
 use strict;
 use warnings;
-use Encode qw(encode decode);
-use Data::Printer;
-use DateTime;
 
 sub load {
     my ( $class, $robot ) = @_;
-    my %text;
-    my $user_name;
-    my $user_msg;
     my @msgs;
-    
 
     $robot->catchAll(
         sub {
             my $msg = shift;
 
-            $user_name = $msg->message->user->{name};
-            $user_msg = $msg->message->text;
+            my $user_name = $msg->message->user->{name};
+            my $user_msg = $msg->message->text;
 
-            push @msgs, "$user_name"." $user_msg";
+            push @msgs, "$user_name "."$user_msg";
         }
     );
 
     $robot->hear (
-        qr/^s\/(.*?)\/(.*?)\/g$/i,
+        qr/^s\/(.*?)\/(.*?)\/$/i,
 
         sub {
             my $msg = shift;
+            my @replace_wr;
 
             my $sender = $msg->message->user->{name};
             my $before_wr = $msg->match->[0];
@@ -39,9 +33,10 @@ sub load {
             for my $sender_p ( @msgs ) {
                 if ( $sender_p =~ /^$sender .*?$before_wr.*?/ ) { 
                     $sender_p =~ s/$before_wr/$after_wr/;
-                    $msg->send($sender_p);
+                    push @replace_wr, $sender_p; 
                 }
             }
+            $msg->send($replace_wr[$#replace_wr]);
         }
     );
 }
@@ -55,6 +50,8 @@ sub load {
     Hubot::Scripts::texttrans
  
 =head1 SYNOPSIS
+
+    s/<regexp>/<replacement>/ - Search for a character, and then are replaced.
 
 =head1 AUTHOR
 
