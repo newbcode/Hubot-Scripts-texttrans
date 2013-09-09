@@ -1,6 +1,5 @@
 package Hubot::Scripts::texttrans;
 
-use 5.010;
 use utf8;
 use strict;
 use warnings;
@@ -23,23 +22,26 @@ sub load {
             $user_name = $msg->message->user->{name};
             $user_msg = $msg->message->text;
 
-            push @msgs, $user_name, $user_msg;
-
-            %text = (
-                $user_name => $user_msg,
-            );
+            push @msgs, "$user_name"." $user_msg";
         }
     );
 
     $robot->hear (
-        qr/start/i,
+        qr/^s\/(.*?)\/(.*?)\/g$/i,
 
         sub {
             my $msg = shift;
-#$msg->send($text{$user_name});
-            $msg->send(@msgs);
-#p %text;
-            p @msgs;
+
+            my $sender = $msg->message->user->{name};
+            my $before_wr = $msg->match->[0];
+            my $after_wr = $msg->match->[1];
+
+            for my $sender_p ( @msgs ) {
+                if ( $sender_p =~ /^$sender .*?$before_wr.*?/ ) { 
+                    $sender_p =~ s/$before_wr/$after_wr/;
+                    $msg->send($sender_p);
+                }
+            }
         }
     );
 }
